@@ -1,9 +1,5 @@
-#include <stdio.h>
-#include <termios.h>
-#include <unistd.h>
-#include <fcntl.h>
-#include <stdlib.h>
 #include "definitions.h"
+#include "can.c"
 int init(char * device){
    serial_init=0;
    struct termios spconfig;
