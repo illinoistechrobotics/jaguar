@@ -3,9 +3,7 @@
 #include <unistd.h>
 #include <fcntl.h>
 #include <stdlib.h>
-#define SERIALDEV "/dev/ttyACM0"
-int serial_file;
-int serial_init=0;
+#include "definitions.h"
 int init(char * device){
    serial_init=0;
    struct termios spconfig;

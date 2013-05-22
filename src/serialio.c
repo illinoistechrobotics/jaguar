@@ -3,7 +3,7 @@
 #include <unistd.h>
 #include <fcntl.h>
 #include <stdlib.h>
-#define SERIALDEV "/dev/ttyACM0"
+#include "definitions.h"
 int main(int argc, char** argv){
   int fd;
   struct termios spconfig;
