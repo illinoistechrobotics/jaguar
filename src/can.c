@@ -1,9 +1,10 @@
 #include<stdint.h>
-uint32_t CreateMessageID(uint8_t canid, uint16_t api, uint8_t mfgid, uint8_t devtype)
+uint32_t CreateMessageID(uint8_t canid, uint8_t apicls, uint8_t apinum, uint8_t mfgid, uint8_t devtype)
 {
 uint32_t id;
 id = canid & 0x3f;
-id |= ((api & 0x03ff)<<6);
+id |= ((apicls & 0x7f)<<6);
+id |= ((apinum & 0x0f)<<12);
 id |= mfgid << 16;
 id |= devtype << 24;
 return id;
@@ -38,12 +39,27 @@ int CANSendMessage(uint32_t ulID, const char* data, int len)
       //
       // Send the constructed message.
       //
-      if(write(serial_file,&msg,(6+len))==0){
+      const char esc1[] = {0xfe,0xfe};
+      const char esc2[] = {0xfe,0xfd};
+      	write(serial_file,&msg[0],1);
+	printf("Sent: %x\r\n",(msg[0] & 0xff));
+	int c;
+	for(c=1;c<(6+len);c++){
+	if(msg[c]==0xff){
+	write(serial_file,&esc1,2);
+	printf("Sent: %x\r\n",esc1);
+	}
+	else if(msg[c]==0xfe){
+	write(serial_file,&esc2,2);
+	printf("Sent: %x\r\n",esc2);
+	} else {
+	write(serial_file,&msg[c],1);
+	printf("Sent: %x\r\n",(msg[c] & 0xff));
+	}
+ 	}
          return 0;
-      } else {
-         return 1;
       }
-   } else {
-      return 1;
+	else {
+	return 1;
    }
 }

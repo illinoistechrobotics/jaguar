@@ -16,11 +16,15 @@ int init(char * device){
 }
 int main(int argc, char** argv){
    char buf[50];
-   int n;
-   printf("%d\n",init("/dev/ttyACM0"));
-   CANSendMessage(CreateMessageID(1,9,0,0),NULL,0);
-   usleep(100000);
+   int n,i;
+   printf("%d\n",init(SERIALDEV));
+while(1){
+   CANSendMessage(CreateMessageID(2,2,0,2,2),NULL,0);
+   usleep(50000);
    n=read(serial_file,buf,50);
-   write(STDOUT_FILENO,buf,n);
+for(i=0;i<n;i++){
+   printf("Response 1: %x\r\n",buf[i]);
+}
+}
    return 0;
 }
