@@ -1,15 +1,25 @@
-int CANSendMessage(unsigned long ulID, const char* data, int len)
+#include<stdint.h>
+uint32_t CreateMessageID(uint8_t canid, uint16_t api, uint8_t mfgid, uint8_t devtype)
+{
+uint32_t id;
+id = canid & 0x3f;
+id |= ((api & 0x03ff)<<6);
+id |= mfgid << 16;
+id |= devtype << 24;
+return id;
+}
+int CANSendMessage(uint32_t ulID, const char* data, int len)
 {
    int i;
    if(serial_init==1){
-      char msg[6+len];
+      uint8_t msg[6+len];
       //Start of packet indicator.  
       msg[0]=0xff;
 
       //
       // Set the length of the data packet.
       //
-      msg[1]=(char)(len + 4);
+      msg[1]=(uint8_t)(len + 4);
 
       //
       // Set the message ID.

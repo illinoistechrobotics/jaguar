@@ -15,6 +15,12 @@ int init(char * device){
    return serial_file = fd;
 }
 int main(int argc, char** argv){
+   char buf[50];
+   int n;
    printf("%d\n",init("/dev/ttyACM0"));
+   CANSendMessage(CreateMessageID(1,9,0,0),NULL,0);
+   usleep(100000);
+   n=read(serial_file,buf,50);
+   write(STDOUT_FILENO,buf,n);
    return 0;
 }
