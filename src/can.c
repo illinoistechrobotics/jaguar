@@ -1,4 +1,6 @@
 #include<stdint.h>
+char data[4];
+int len=0;
 uint32_t CreateMessageID(uint8_t canid, uint8_t apicls, uint8_t apinum, uint8_t mfgid, uint8_t devtype)
 {
 uint32_t id;
@@ -9,7 +11,26 @@ id |= mfgid << 16;
 id |= devtype << 24;
 return id;
 }
-int CANSendMessage(uint32_t ulID, const char* data, int len)
+float fixed2float(int whole, int frac){
+float out = (float)whole+((float)frac/256.0);
+return out;
+}
+void SetDataSignedInt16(int16_t in){
+data[0] = in & 0xff;
+data[1] = (in>>8) & 0xff;
+len=2;
+}
+void SetDataSignedInt32(int32_t in){
+data[0] = in & 0xff;
+data[1] = (in>>8) & 0xff;
+data[2] = (in>>16) & 0xff;
+data[3] = (in>>24) & 0xff;
+len=4;
+}
+void ClearData(){
+len=0;
+}
+int CANSendMessage(uint32_t ulID)
 {
    int i;
    if(serial_init==1){
@@ -47,11 +68,11 @@ int CANSendMessage(uint32_t ulID, const char* data, int len)
 	for(c=1;c<(6+len);c++){
 	if(msg[c]==0xff){
 	write(serial_file,&esc1,2);
-	printf("Sent: %x\r\n",esc1);
+	printf("Sent: 0xfe 0xfe\r\n");
 	}
 	else if(msg[c]==0xfe){
 	write(serial_file,&esc2,2);
-	printf("Sent: %x\r\n",esc2);
+	printf("Sent: 0xfe 0xfd\r\n");
 	} else {
 	write(serial_file,&msg[c],1);
 	printf("Sent: %x\r\n",(msg[c] & 0xff));

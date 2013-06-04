@@ -20,12 +20,13 @@ int main(int argc, char** argv){
    int n,i;
    printf("%d\n",init(SERIALDEV));
 // while(1){
-   CANSendMessage(CreateMessageID(2,5,1,2,2),NULL,0);
+   CANSendMessage(CreateMessageID(2,API_STATUS,1,MFG_TI,DEVTYPE_MOTORCNTL));
    usleep(50000);
    n=read(serial_file,buf,50);
 for(i=0;i<n;i++){
    printf("Response 1: %x\r\n",buf[i]);
 }
+   printf("Voltage: %f\r\n",fixed2float(buf[7],buf[6]));
 //}
    return 0;
 }
