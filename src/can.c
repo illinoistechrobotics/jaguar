@@ -3,8 +3,8 @@ uint32_t CreateMessageID(uint8_t canid, uint8_t apicls, uint8_t apinum, uint8_t 
 {
 uint32_t id;
 id = canid & 0x3f;
-id |= ((apicls & 0x7f)<<6);
-id |= ((apinum & 0x0f)<<12);
+id |= ((apinum & 0x0f)<<6);
+id |= ((apicls & 0x7f)<<10);
 id |= mfgid << 16;
 id |= devtype << 24;
 return id;
