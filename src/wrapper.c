@@ -15,12 +15,14 @@ int init(char * device){
    return serial_file = fd;
 }
 int main(int argc, char** argv){
-// CANSendMessage usage: CANid, API Class, API Value, Manuf., DevType
+
    char buf[50];
    int n,i;
+   CANMessage cm;
    printf("%d\n",init(SERIALDEV));
 // while(1){
-   CANSendMessage(CreateMessageID(2,API_STATUS,1,MFG_TI,DEVTYPE_MOTORCNTL));
+   CANMessageSetIDDefaults(2,&cm);
+   CANSendMessage(&cm);
    usleep(50000);
    n=read(serial_file,buf,50);
 for(i=0;i<n;i++){

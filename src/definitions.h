@@ -3,6 +3,7 @@
 #include <unistd.h>
 #include <fcntl.h>
 #include <stdlib.h>
+#include <stdint.h>
 #define SERIALDEV "/dev/ttyAMA0"
 #define MFG_TI (uint8_t)2
 #define DEVTYPE_MOTORCNTL (uint8_t)2
@@ -19,3 +20,26 @@ int serial_init=0;
 #define API_STATUS 5
 #define API_CONFIG 7
 #define API_ACK 8
+
+// CANMessage structure
+typedef struct{
+char data[8];
+uint8_t datalen;
+uint8_t canid;
+uint8_t mfgid;
+uint8_t devid;
+uint8_t apicls;
+uint8_t apinum;
+} CANMessage;
+
+//MotorController structure
+typedef struct{
+uint8_t canid;
+uint8_t error;
+float din_Vbus;
+float din_Vout;
+float din_Ibus;
+float din_temp;
+uint8_t din_fault;
+float dout_Vout;
+} MotorController;
