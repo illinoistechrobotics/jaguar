@@ -22,6 +22,8 @@ int main(int argc, char** argv){
    printf("%d\n",init(SERIALDEV));
 // while(1){
    CANMessageSetIDDefaults(2,&cm);
+   cm.apicls=5;
+   cm.apinum=1;
    CANSendMessage(&cm);
    usleep(50000);
    n=read(serial_file,buf,50);
