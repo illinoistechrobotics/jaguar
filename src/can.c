@@ -34,37 +34,61 @@ cmsg->devid=DEVTYPE_MOTORCNTL;
 cmsg->apicls=5;
 cmsg->apinum=0;
 }
+void CANPrintf(CANMessage *cmsg){
+printf("------BEGIN CAN MESSAGE------\n");
+printf("CAN ID: %d\n",cmsg->canid);
+printf("API Class: %d\n",cmsg->apicls);
+printf("API Number: %d\n",cmsg->apinum);
+printf("Device ID: %d\n",cmsg->devid);
+printf("Manufacturer ID: %d\n",cmsg->devid);
+printf("Length of data: %d\n",cmsg->datalen);
+int i;
+for(i=0;i<(cmsg->datalen);i++){
+	printf("Data Byte: %x\n",(unsigned int)(cmsg->data[i]));
+}
+printf("------END CAN MESSAGE------\n\n");
+}
 int CANRecvMessage(CANMessage *cmsg){
 uint8_t bufraw[18];
-int i,len,rawcount=0,unesccount=0;
+int len,rawcount=2,unesccount=0;
 uint8_t bufunesc[16];
 if(serial_init==1){
-	len=read(serial_file,bufraw,18);
-	if(len<5){
-		//Invalid Message!
-		return -2;
-	}
+	len=read(serial_file,bufraw,2);
+
 	if(bufraw[0]!=0xff){
                 //Invalid Message!
                 return -1;
-        }
+        }	
+	len += read(serial_file,bufraw+2,bufraw[1]);
+	#ifdef DEBUG
+	printf("Message of length %d recieved\n",len);
+	printf("CAN Device specified size: %d\n",bufraw[1]);
+	#endif
+	if(len<5 || len>12){
+		//Invalid Message!
+		return -2;
+	}
 	// Unescape ID + Data
-	for(i=2;i<len;i++){
-		if(i<(len-1)){
+	for(unesccount=0;unesccount<len-2;unesccount++){
+		#ifdef DEBUG
+		printf("rawcount %d\n",rawcount);
+		printf("unesccount %d\n",unesccount);
+		#endif
+		if(unesccount<(len-3)){
 		// Gen. case
 			if((bufraw[rawcount]==0xfe)&&(bufraw[rawcount+1]==0xfe)){
 				//This = 0xff
 				bufunesc[unesccount]=0xff;
 				rawcount += 2;
-				unesccount++;
+			
 			} else if((bufraw[rawcount]==0xfe)&&(bufraw[rawcount+1]==0xfd)){
                                 //This = 0xfe
                                 bufunesc[unesccount]=0xfe;
                                 rawcount += 2;
-                                unesccount++;
+                       
                         } else {
 				bufunesc[unesccount]=bufraw[rawcount];
-				unesccount++;
+		
 				rawcount++;
 			}
 		}
@@ -77,16 +101,24 @@ if(serial_init==1){
                 //Invalid Length
                 return -2;
         }
+	#ifdef DEBUG
+	printf("%d bytes unescaped\n",unesccount);
+	printf("ID Bytes: %x ",bufunesc[0]);
+	printf("%x ",bufunesc[1]);
+	printf("%x ",bufunesc[2]);
+	printf("%x\n",bufunesc[3]);
+	#endif
 	//Reverse-parse ID, bytes 3-6
-	cmsg->canid = bufunesc[3] & 0x3f;
-	cmsg->apinum = (bufunesc[3]>>6) & 0x03;
-	cmsg->apinum |= (bufunesc[4]<<2) & 0x0c;
-	cmsg->apicls = (bufunesc[4]>>2) & 0x3f;
-	cmsg->mfgid = bufunesc[5];
-	cmsg->devid = bufunesc[6] & 0x1f;
+	cmsg->canid = bufunesc[0] & 0x3f;
+	cmsg->apinum = (bufunesc[0]>>6) & 0x03;
+	cmsg->apinum |= (bufunesc[1]<<2) & 0x0c;
+	cmsg->apicls = (bufunesc[1]>>2) & 0x3f;
+	cmsg->mfgid = bufunesc[2];
+	cmsg->devid = bufunesc[3] & 0x1f;
+	cmsg->datalen=unesccount-4;
 	//Memcpy data if necessary
-	if(unesccount>6){
-	memcpy(cmsg->data,&bufunesc[7],(unesccount-6));
+	if(unesccount>4){
+	memcpy(cmsg->data,&bufunesc[5],(unesccount-4)*sizeof(cmsg->data[0]));
 	}
 	return 0;
 }

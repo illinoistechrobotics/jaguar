@@ -4,7 +4,8 @@
 #include <fcntl.h>
 #include <stdlib.h>
 #include <stdint.h>
-#include <string.h>
+#include <string.h> //needed for memcpy
+//#define DEBUG
 #define SERIALDEV "/dev/ttyAMA0"
 #define MFG_TI (uint8_t)2
 #define DEVTYPE_MOTORCNTL (uint8_t)2

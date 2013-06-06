@@ -16,21 +16,23 @@ int init(char * device){
 }
 int main(int argc, char** argv){
 
-   char buf[50];
-   int n,i;
-   CANMessage cm;
+   //char buf[50];
+   //int n,i;
+   CANMessage cm,recv;
    printf("%d\n",init(SERIALDEV));
-// while(1){
    CANMessageSetIDDefaults(2,&cm);
    cm.apicls=5;
    cm.apinum=1;
    CANSendMessage(&cm);
-   usleep(50000);
-   n=read(serial_file,buf,50);
-for(i=0;i<n;i++){
-   printf("Response 1: %x\r\n",buf[i]);
-}
-   printf("Voltage: %f\r\n",fixed2float(buf[7],buf[6]));
+   usleep(5000);
+
+	while(CANRecvMessage(&recv)==0){
+	CANPrintf(&recv);
+	}
+ //  n=read(serial_file,buf,50);
+//for(i=0;i<n;i++){
+//   printf("Response 1: %x\r\n",buf[i]);
 //}
+//   printf("Voltage: %f\r\n",fixed2float(buf[7],buf[6]));
    return 0;
 }
