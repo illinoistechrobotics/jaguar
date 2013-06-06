@@ -34,12 +34,73 @@ cmsg->devid=DEVTYPE_MOTORCNTL;
 cmsg->apicls=5;
 cmsg->apinum=0;
 }
+int CANRecvMessage(CANMessage *cmsg){
+uint8_t bufraw[18];
+int i,len,rawcount=0,unesccount=0;
+uint8_t bufunesc[16];
+if(serial_init==1){
+	len=read(serial_file,bufraw,18);
+	if(len<5){
+		//Invalid Message!
+		return -2;
+	}
+	if(bufraw[0]!=0xff){
+                //Invalid Message!
+                return -1;
+        }
+	// Unescape ID + Data
+	for(i=2;i<len;i++){
+		if(i<(len-1)){
+		// Gen. case
+			if((bufraw[rawcount]==0xfe)&&(bufraw[rawcount+1]==0xfe)){
+				//This = 0xff
+				bufunesc[unesccount]=0xff;
+				rawcount += 2;
+				unesccount++;
+			} else if((bufraw[rawcount]==0xfe)&&(bufraw[rawcount+1]==0xfd)){
+                                //This = 0xfe
+                                bufunesc[unesccount]=0xfe;
+                                rawcount += 2;
+                                unesccount++;
+                        } else {
+				bufunesc[unesccount]=bufraw[rawcount];
+				unesccount++;
+				rawcount++;
+			}
+		}
+		else{
+                //Last Byte
+                bufunesc[unesccount]=bufraw[rawcount];
+                }
+ 	}
+	if((uint8_t)bufraw[1]!=unesccount){
+                //Invalid Length
+                return -2;
+        }
+	//Reverse-parse ID, bytes 3-6
+	cmsg->canid = bufunesc[3] & 0x3f;
+	cmsg->apinum = (bufunesc[3]>>6) & 0x03;
+	cmsg->apinum |= (bufunesc[4]<<2) & 0x0c;
+	cmsg->apicls = (bufunesc[4]>>2) & 0x3f;
+	cmsg->mfgid = bufunesc[5];
+	cmsg->devid = bufunesc[6] & 0x1f;
+	//Memcpy data if necessary
+	if(unesccount>6){
+	memcpy(cmsg->data,&bufunesc[7],(unesccount-6));
+	}
+	return 0;
+}
+else{
+return -1;
+}
+}
 int CANSendMessage(CANMessage *cmsg)
 {
    int i;
    uint32_t ulID;
    ulID=CreateMessageID(cmsg->canid,cmsg->apicls,cmsg->apinum,cmsg->mfgid,cmsg->devid);
    if(serial_init==1){
+	tcflush(serial_file, TCIFLUSH);
       uint8_t msg[6+(cmsg->datalen)];
       //Start of packet indicator.  
       msg[0]=0xff;

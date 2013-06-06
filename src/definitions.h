@@ -4,6 +4,7 @@
 #include <fcntl.h>
 #include <stdlib.h>
 #include <stdint.h>
+#include <string.h>
 #define SERIALDEV "/dev/ttyAMA0"
 #define MFG_TI (uint8_t)2
 #define DEVTYPE_MOTORCNTL (uint8_t)2
@@ -23,7 +24,7 @@ int serial_init=0;
 
 // CANMessage structure
 typedef struct{
-char data[8];
+uint8_t data[8];
 uint8_t datalen;
 uint8_t canid;
 uint8_t mfgid;
