@@ -43,5 +43,5 @@ float din_Vout;
 float din_Ibus;
 float din_temp;
 uint8_t din_fault;
-float dout_Vout;
+int16_t dout_Vout;
 } MotorController;

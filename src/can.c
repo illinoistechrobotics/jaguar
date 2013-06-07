@@ -11,19 +11,27 @@ float fixed2float(int whole, int frac){
 float out = (float)whole+((float)frac/256.0);
 return out;
 }
-void SetDataSignedInt16(int16_t in, CANMessage *cmsg){
+void float2fixed88(int8_t *ptr, float in){
+//Whole part
+ptr[0]=(int8_t)in;
+//Drop whole part and sign 
+in=in-(int8_t)in;
+//Calculate fractional part
+ptr[1]=(in*256);
+}
+void CANSetDataSignedInt16(int16_t in, CANMessage *cmsg){
 cmsg->data[0] = in & 0xff;
 cmsg->data[1] = (in>>8) & 0xff;
 cmsg->datalen=2;
 }
-void SetDataSignedInt32(int32_t in, CANMessage *cmsg){
+void CANSetDataSignedInt32(int32_t in, CANMessage *cmsg){
 cmsg->data[0] = in & 0xff;
 cmsg->data[1] = (in>>8) & 0xff;
 cmsg->data[2] = (in>>16) & 0xff;
 cmsg->data[3] = (in>>24) & 0xff;
 cmsg->datalen=4;
 }
-void ClearData(CANMessage *cmsg){
+void CANClearData(CANMessage *cmsg){
 cmsg->datalen=0;
 }
 void CANMessageSetIDDefaults(uint8_t id, CANMessage *cmsg){
@@ -48,6 +56,7 @@ for(i=0;i<(cmsg->datalen);i++){
 }
 printf("------END CAN MESSAGE------\n\n");
 }
+
 int CANRecvMessage(CANMessage *cmsg){
 uint8_t bufraw[18];
 int len,rawcount=2,unesccount=0;
@@ -182,4 +191,14 @@ int CANSendMessage(CANMessage *cmsg)
 	else {
 	return 1;
    }
+}
+void CANBroadcastHeartbeat(){
+CANMessage hb;
+hb.canid=0;// Broadcast
+hb.mfgid=0;
+hb.devid=0; //System control message
+hb.datalen=0;
+hb.apicls=0;
+hb.apinum=5;
+CANSendMessage(&hb);
 }
