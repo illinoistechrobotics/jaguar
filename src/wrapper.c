@@ -1,5 +1,6 @@
 #include "definitions.h"
 #include "can.c"
+#include "motorcontroller.c"
 int init(char * device){
    serial_init=0;
    struct termios spconfig;
@@ -15,24 +16,25 @@ int init(char * device){
    return serial_file = fd;
 }
 int main(int argc, char** argv){
-
-   //char buf[50];
-   //int n,i;
-   CANMessage cm,recv;
    printf("%d\n",init(SERIALDEV));
-   CANMessageSetIDDefaults(2,&cm);
-   cm.apicls=5;
-   cm.apinum=1;
-   CANSendMessage(&cm);
-   usleep(5000);
-
-	while(CANRecvMessage(&recv)==0){
-	CANPrintf(&recv);
-	}
- //  n=read(serial_file,buf,50);
-//for(i=0;i<n;i++){
-//   printf("Response 1: %x\r\n",buf[i]);
-//}
-//   printf("Voltage: %f\r\n",fixed2float(buf[7],buf[6]));
+   MotorController m1;
+   m1.canid=2;
+   m1.dout_Vout=-32000;
+   printf("Init status %d\n",InitMotorController(API_VOLTAGE,&m1));
+   printf("Read status %d\n",ReadMotorController(&m1));
+   MotorControllerPrintf(&m1);
+   WriteMotorController(&m1);
+   MotorControllerPrintf(&m1);
+int c=0;
+while(1){
+CANBroadcastHeartbeat();
+usleep(50000);
+c++;
+if(c>40){
+ReadMotorController(&m1);
+MotorControllerPrintf(&m1);
+c=0;
+}
+}
    return 0;
 }

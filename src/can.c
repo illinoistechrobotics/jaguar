@@ -127,7 +127,8 @@ if(serial_init==1){
 	cmsg->datalen=unesccount-4;
 	//Memcpy data if necessary
 	if(unesccount>4){
-	memcpy(cmsg->data,&bufunesc[5],(unesccount-4)*sizeof(cmsg->data[0]));
+	//printf("%d bytes memcpy'ed", unesccount-4);
+	memcpy(cmsg->data,&bufunesc[4],unesccount-4);
 	}
 	return 0;
 }
@@ -171,19 +172,27 @@ int CANSendMessage(CANMessage *cmsg)
       const char esc1[] = {0xfe,0xfe};
       const char esc2[] = {0xfe,0xfd};
       	write(serial_file,&msg[0],1);
+	#ifdef DEBUG
 	printf("Sent: %x\r\n",(msg[0] & 0xff));
+	#endif
 	int c;
 	for(c=1;c<(6+(cmsg->datalen));c++){
 	if(msg[c]==0xff){
 	write(serial_file,&esc1,2);
+	#ifdef DEBUG
 	printf("Sent: 0xfe 0xfe\r\n");
+	#endif
 	}
 	else if(msg[c]==0xfe){
 	write(serial_file,&esc2,2);
+	#ifdef DEBUG
 	printf("Sent: 0xfe 0xfd\r\n");
+	#endif
 	} else {
 	write(serial_file,&msg[c],1);
+	#ifdef DEBUG
 	printf("Sent: %x\r\n",(msg[c] & 0xff));
+	#endif
 	}
  	}
          return 0;
