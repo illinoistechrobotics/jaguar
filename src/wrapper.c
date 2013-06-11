@@ -19,7 +19,7 @@ int main(int argc, char** argv){
    printf("%d\n",init(SERIALDEV));
    MotorController m1;
    m1.canid=2;
-   m1.dout_Vout=-32000;
+   m1.dout_Vout=-31000;
    printf("Init status %d\n",InitMotorController(API_VOLTAGE,&m1));
    printf("Read status %d\n",ReadMotorController(&m1));
    MotorControllerPrintf(&m1);

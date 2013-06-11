@@ -88,7 +88,7 @@ if(canrecv.datalen != 2){
 #ifdef DEBUG
 printf("Data Byte 1 %x", canrecv.data[0]); printf("2: %x\n",canrecv.data[1]);
 #endif
-mot->din_Vout=fixed2float(canrecv.data[1],canrecv.data[0]);
+mot->din_Vout=fixed2float(abs((int8_t)canrecv.data[1]),canrecv.data[0]);
 //Re-init values;
 CANClearData(&canrecv);
 cansend.apicls=5;
