@@ -1,6 +1,7 @@
 #include "definitions.h"
 #include "can.c"
 #include "motorcontroller.c"
+#include "ipc.c"
 int init(char * device){
    serial_init=0;
    struct termios spconfig;
@@ -18,10 +19,12 @@ int init(char * device){
 int main(int argc, char** argv){
    printf("%d\n",init(SERIALDEV));
    MotorController m1;
+   FIFOTree f1;
    m1.canid=2;
    m1.dout_Vout=-31000;
    printf("Init status %d\n",InitMotorController(API_VOLTAGE,&m1));
    printf("Read status %d\n",ReadMotorController(&m1));
+   FIFOSetup(&m1,&f1);
    MotorControllerPrintf(&m1);
    WriteMotorController(&m1);
    MotorControllerPrintf(&m1);

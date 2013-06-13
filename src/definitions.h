@@ -5,6 +5,8 @@
 #include <stdlib.h>
 #include <stdint.h>
 #include <string.h> //needed for memcpy
+#include <sys/types.h>
+#include <sys/stat.h>
 //#define DEBUG
 #define SERIALDEV "/dev/ttyAMA0"
 #define MFG_TI (uint8_t)2
@@ -45,3 +47,10 @@ float din_temp;
 uint8_t din_fault;
 int16_t dout_Vout;
 } MotorController;
+
+//FIFO Structure
+typedef struct{
+uint8_t canid;
+int din_Vbus_f, din_Vout_f, din_Ibus_f, din_temp_f, din_fault_f, dout_Vout_f;
+} FIFOTree;
+
