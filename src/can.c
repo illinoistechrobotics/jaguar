@@ -105,8 +105,10 @@ if(serial_init==1){
                 //Last Byte
                 bufunesc[unesccount]=bufraw[rawcount];
                 }
+	#ifdef DEBUG
 	printf("Recieved data: %x\n",bufunesc[unesccount]);
- 	}
+	#endif 	
+	}
 	if((uint8_t)bufraw[1]!=unesccount){
                 //Invalid Length
                 return -2;

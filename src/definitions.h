@@ -1,3 +1,4 @@
+#include <sched.h>
 #include <stdio.h>
 #include <termios.h>
 #include <unistd.h>
@@ -51,6 +52,7 @@ int16_t dout_Vout;
 //FIFO Structure
 typedef struct{
 uint8_t canid;
+char dirname[16];
 int din_Vbus_f, din_Vout_f, din_Ibus_f, din_temp_f, din_fault_f, dout_Vout_f;
 } FIFOTree;
 
