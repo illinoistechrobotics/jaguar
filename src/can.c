@@ -153,6 +153,7 @@ int CANSendMessage(CANMessage *cmsg)
       //
       // Set the length of the data packet.
       //
+      //TODO: Check that datalen is valid before sending
       msg[1]=(uint8_t)(cmsg->datalen + 4);
 
       //
@@ -176,6 +177,7 @@ int CANSendMessage(CANMessage *cmsg)
       const char esc2[] = {0xfe,0xfd};
       	write(serial_file,&msg[0],1);
 	#ifdef DEBUG
+	//TODO: printfs may cause message timeouts on bus
 	printf("Sent: %x\r\n",(msg[0] & 0xff));
 	#endif
 	int c;
