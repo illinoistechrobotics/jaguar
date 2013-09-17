@@ -2,16 +2,17 @@
 #include "SDL.h"
 #include <stdint.h>
 #include <signal.h>
-#include <termios.h>
 #include <unistd.h>
 #include <fcntl.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <netdb.h>
 typedef struct{
-int16_t x,y;
-char auth[9];
-int16_t checksum;
+		uint8_t type;
+		int16_t x,y;
+		char auth[9];
+		uint8_t seq;
+		int16_t checksum;
 } packet_t;
 
 void error(char *msg){
@@ -66,16 +67,30 @@ char buffer[256];
    server.sin_port = htons(atoi(argv[2]));
    length=sizeof(struct sockaddr_in);
 
-packet_t packet;
+packet_t packet, sync;
 if(strlen(argv[3])>8){
 error("Auth string too long!");
 }
 memcpy(&packet.auth,argv[3],strlen(argv[3])+1);
+memcpy(&sync.auth,argv[3],strlen(argv[3])+1);
+packet.type=1;
+sync.x=0;
+sync.y=0;
+sync.checksum=0;
+sync.type=0;
+sync.seq=0;
+sendto(sock,&sync,sizeof(sync),0,(const struct sockaddr *)&server,length);
 while(loop&&SDL_JoystickGetAttached(joy)){
+packet.seq++;
+if(){
+packet.seq>200;
+sendto(sock,&sync,sizeof(sync),0,(const struct sockaddr *)&server,length);
+packet.seq=0;
+}
 SDL_JoystickUpdate();
 packet.x = SDL_JoystickGetAxis(joy, 0)/128;
 packet.y = SDL_JoystickGetAxis(joy, 1)/128;
-packet.checksum=packet.x^packet.y;
+packet.checksum=packet.x^packet.y^packet.seq;
 rv=sendto(sock,&packet,sizeof(packet),0,(const struct sockaddr *)&server,length);
 printf("X=%d, Y=%d\n",packet.x,packet.y);
 usleep(15000);
