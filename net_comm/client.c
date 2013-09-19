@@ -8,11 +8,10 @@
 #include <netinet/in.h>
 #include <netdb.h>
 typedef struct{
-		uint8_t type;
-		int16_t x,y;
+		int8_t x,y;
 		char auth[9];
-		uint8_t seq;
-		int16_t checksum;
+		uint16_t seq;
+		uint8_t checksum;
 } packet_t;
 
 void error(char *msg){
@@ -72,28 +71,16 @@ if(strlen(argv[3])>8){
 error("Auth string too long!");
 }
 memcpy(&packet.auth,argv[3],strlen(argv[3])+1);
-memcpy(&sync.auth,argv[3],strlen(argv[3])+1);
-packet.type=1;
-sync.x=0;
-sync.y=0;
-sync.checksum=0;
-sync.type=0;
-sync.seq=0;
-sendto(sock,&sync,sizeof(sync),0,(const struct sockaddr *)&server,length);
+packet.seq=65530;
 while(loop&&SDL_JoystickGetAttached(joy)){
 packet.seq++;
-if(){
-packet.seq>200;
-sendto(sock,&sync,sizeof(sync),0,(const struct sockaddr *)&server,length);
-packet.seq=0;
-}
 SDL_JoystickUpdate();
-packet.x = SDL_JoystickGetAxis(joy, 0)/128;
-packet.y = SDL_JoystickGetAxis(joy, 1)/128;
-packet.checksum=packet.x^packet.y^packet.seq;
+packet.x = SDL_JoystickGetAxis(joy, 0)/256;
+packet.y = SDL_JoystickGetAxis(joy, 1)/256;
+packet.checksum=packet.x^packet.y;
 rv=sendto(sock,&packet,sizeof(packet),0,(const struct sockaddr *)&server,length);
-printf("X=%d, Y=%d\n",packet.x,packet.y);
-usleep(15000);
+//printf("X=%d, Y=%d\n",packet.x,packet.y);
+usleep(10000);
 }
  	 
     // Close if opened
