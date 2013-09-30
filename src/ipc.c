@@ -1,75 +1,45 @@
-#include <signal.h>
-#define PRINTFORMAT "%f"
-void CHKERR(int err){
-#define nodp 600
-	if(err!=0){
-		printf("FIFO Creation Error!");
-		exit(EXIT_FAILURE);
-	}
-}
-void FIFOSetup(MotorController *m ,FIFOTree *ft){
-	signal(SIGPIPE,SIG_IGN);
-	int ierr;
-	ft->canid=m->canid;
-	char dirname[8];
-	char fifopath[32];
-	// First delete any levtover directories or FIFOS
-	char rmcmd[32] = "rm -rf ";
-	sprintf(dirname,"%d/",m->canid);
-	strncpy(ft->dirname,dirname,8);
-	strncat(rmcmd,dirname,24);
-	system(rmcmd);
-	ierr=mkdir(dirname,nodp);CHKERR(ierr);
-	strncpy(fifopath,dirname,8);
-	strncat(fifopath,"din_Vbus",22);
-	ierr=mknod(fifopath,nodp,0);CHKERR(ierr);
-	ft->din_Vbus_f=open(fifopath,O_WRONLY|O_NONBLOCK);
-	strncpy(fifopath,dirname,8);
-	strncat(fifopath,"din_Vout",22);
-	ierr=mknod(fifopath,nodp,0);CHKERR(ierr);
-	ft->din_Vout_f=open(fifopath,O_WRONLY|O_NONBLOCK);
-	strncpy(fifopath,dirname,8);
-	strncat(fifopath,"din_Ibus",22);
-	ierr=mknod(fifopath,nodp,0);CHKERR(ierr);
-	ft->din_Ibus_f=open(fifopath,O_WRONLY|O_NONBLOCK);
-	strncpy(fifopath,dirname,8);
-	strncat(fifopath,"din_temp",22);
-	ierr=mknod(fifopath,nodp,0);CHKERR(ierr);
-	ft->din_temp_f=open(fifopath,O_WRONLY|O_NONBLOCK);
-	strncpy(fifopath,dirname,8);
-	strncat(fifopath,"din_fault",22);
-	ierr=mknod(fifopath,nodp,0);CHKERR(ierr);
-	ft->din_fault_f=open(fifopath,O_WRONLY|O_NONBLOCK);
+#define NCONTROLLERS 1
+#include <sys/ipc.h>
+#include <sys/shm.h>
+
+char *shm_pointer;
+void shm_setup(uint8_t ndevs){
+    int shmid;
+    key_t key;
+    key = 1339;
+	uint16_t size = 2+(sizeof(MotorController)*ndevs);
+    /*
+     * Create the segment.
+     */
+    if ((shmid = shmget(key, size, IPC_CREAT | 0666)) < 0) {
+        perror("shmget");
+        exit(1);
+    }
+
+    /*
+     * Attach the segment to our data space.
+     */
+    if ((shm_pointer = shmat(shmid, NULL, 0)) == (char *) -1) {
+        perror("shmat");
+        exit(1);
+    }
 }
 
-int FIFOWrite(MotorController *m ,FIFOTree *ft){
-	int stat;
-	stat = dprintf(ft->din_Vbus_f,PRINTFORMAT,m->din_Vbus);
-	stat += dprintf(ft->din_Vout_f,PRINTFORMAT,m->din_Vout);
-	stat += dprintf(ft->din_Ibus_f,PRINTFORMAT,m->din_Ibus);
-	stat += dprintf(ft->din_temp_f,PRINTFORMAT,m->din_temp);
-	stat += dprintf(ft->din_fault_f,"%x",m->din_fault);
-	return stat;
+void shm_write(MotorController *m ,uint8_t ndevs){
+	MotorController *temp;
+	int i=0;
+	for(i=0; i<ndevs; i++){
+	temp=(MotorController *)(shm_pointer+2+(i*sizeof(MotorController)));
+	// memcpy all data except for last field
+	memcpy(temp,&m[i],sizeof(MotorController)-sizeof(int16_t));
 }
-int FIFORead(MotorController *m ,FIFOTree *ft){
-	int stat=0;
-	int16_t power;
-	char inbuf[32];
-	char fifopath[32];
-	strncpy(fifopath,ft->dirname,8);
-        strncat(fifopath,"dout_Vout",22);
-	ft->dout_Vout_f=open(fifopath,O_RDONLY|O_NONBLOCK);
-	if(ft->dout_Vout_f != -1){
-	if(read(ft->dout_Vout_f,inbuf,32)>0){
-		printf("%s recieved from FIFO",inbuf);
-		power = atoi(inbuf);
-		m->dout_Vout=power;
-		stat=0;
+}
+void shm_read(MotorController *m ,uint8_t ndevs){
+	MotorController *temp;
+	int i=0;
+	for(i=0; i<ndevs; i++){
+	temp=(MotorController *)(shm_pointer+2+(i*sizeof(MotorController))-sizeof(int16_t));
+	// memcpy last field only
+	memcpy(&m[i].dout_Vout,temp,sizeof(int16_t));
 	}
 }
-	else{
-		stat=1;
-	}
-	return stat;
-}
-

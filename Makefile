@@ -3,6 +3,9 @@ CC = gcc
 CFLAGS = -Wall -Werror -g
 
 jaguar: src/wrapper.c src/can.c src/serialio.c
-	$(CC) $(CFLAGS) -o jaguarctl src/wrapper.c 
+	$(CC) $(CFLAGS) -o jaguarctl src/wrapper.c
+
+shmdbg: src/shmdbg.c
+	$(CC) $(CFLAGS) -o shm_test src/shmdbg.c  
 
 clean:;        rm -f test
