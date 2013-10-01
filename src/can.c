@@ -73,7 +73,7 @@ if(serial_init==1){
 	printf("Message of length %d recieved\n",len);
 	printf("CAN Device specified size: %d\n",bufraw[1]);
 	#endif
-	if(len<5 || len>12){
+	if(len<5){
 		//Invalid Message!
 		return -2;
 	}

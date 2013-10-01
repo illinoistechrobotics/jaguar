@@ -2,6 +2,7 @@
 #include "can.c"
 #include "motorcontroller.c"
 #include "ipc.c"
+int ids[4]= {2,3,4,5};
 int init(char * device){
    serial_init=0;
   // struct sched_param sp = { .sched_priority = 50 };
@@ -27,7 +28,7 @@ if( sched_setscheduler( 0, SCHED_FIFO, &sp ) == -1 )
 int main(int argc, char** argv){
    printf("%d\n",init(SERIALDEV));
    MotorController m1;
-   m1.canid=2;
+   m1.canid=3;
    m1.dout_Vout=0;
    printf("Init status %d\n",InitMotorController(API_VOLTAGE,&m1));
    printf("Read status %d\n",ReadMotorController(&m1));
@@ -39,15 +40,15 @@ int c=0;
 while(1){
 usleep(20000);
 c++;
-shm_read(&m1,1);
+//shm_read(&m1,1);
 WriteMotorController(&m1);
 if(c>40){
 ReadMotorController(&m1);
-shm_write(&m1,1);
+//shm_write(&m1,1);
 MotorControllerPrintf(&m1);
-CANBroadcastHeartbeat();
 c=0;
 }
+CANBroadcastHeartbeat();
 }
    return 0;
 }
