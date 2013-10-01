@@ -8,9 +8,11 @@ void shm_setup(uint8_t ndevs){
 		int shmid;
 		key_t key;
 		key = 1339;
-		/*
-		 * Attempt to attach the segment to our data space.
-		 */
+        uint16_t size = 2+(sizeof(MotorController)*ndevs);
+        if ((shmid = shmget(key, size, 0666)) < 0) {
+        perror("shmget");
+        exit(1);
+    }
 		if ((shm_pointer = shmat(shmid, NULL, 0)) == (char *) -1) {
 				perror("shmat");
 				exit(1);
@@ -19,6 +21,7 @@ void shm_setup(uint8_t ndevs){
 MotorController *temp;
 int i=0;
 int main(int argc, char ** argv){
+    shm_setup(1);
 for(;;){
 		for(i=0; i<1; i++){
 				temp=(MotorController *)(shm_pointer+2+(i*sizeof(MotorController)));

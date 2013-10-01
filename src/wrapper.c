@@ -35,6 +35,7 @@ int main(int argc, char** argv){
    WriteMotorController(&m1);
    MotorControllerPrintf(&m1);
 int c=0;
+    shm_setup(1);
 while(1){
 usleep(20000);
 c++;
