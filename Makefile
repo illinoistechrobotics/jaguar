@@ -7,5 +7,6 @@ jaguar: src/wrapper.c src/can.c src/serialio.c
 
 shmdbg: src/shmdbg.c
 	$(CC) $(CFLAGS) -o shm_test src/shmdbg.c  
-
+canutil: src/canutil.c
+	$(CC) $(CFLAGS) -o canutil src/canutil.c
 clean:;        rm -f test
