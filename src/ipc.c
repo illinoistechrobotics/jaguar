@@ -1,4 +1,3 @@
-#define NCONTROLLERS 1
 #include <sys/ipc.h>
 #include <sys/shm.h>
 
@@ -23,8 +22,36 @@ void shm_setup(uint8_t ndevs){
         perror("shmat");
         exit(1);
     }
+    memcpy(shm_pointer,&ndevs,sizeof(uint8_t));
 }
-
+char *shm_pointer;
+uint8_t ndevs;
+uint8_t shm_connect(){
+    int shmid;
+    key_t key;
+    key = 1339;
+    if ((shmid = shmget(key, 1, 0666)) < 0) {
+        perror("shmget");
+        exit(1);
+	}
+    if ((shm_pointer = shmat(shmid, NULL, 0)) == (char *) -1) {
+        perror("shmat");
+        exit(1);
+    }
+		memcpy(&ndevs,shm_pointer,sizeof(uint8_t));
+        uint16_t size = 2+(sizeof(MotorController)*ndevs);
+        shmdt(shm_pointer);
+        if ((shmid = shmget(key, size, 0666)) < 0) {
+            perror("shmget");
+            exit(1);
+        }
+		if ((shm_pointer = shmat(shmid, NULL, 0)) == (char *) -1) {
+            perror("shmat");
+            exit(1);
+		}
+        return ndevs;
+    
+}
 void shm_write(MotorController *m ,uint8_t ndevs){
 	MotorController *temp;
 	int i=0;
