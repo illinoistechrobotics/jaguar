@@ -3,6 +3,8 @@
 #include "motorcontroller.c"
 #include "ipc.c"
 int ids[4]= {2,3,4,5};
+int ncontrollers=4;
+MotorController mc[4];
 int init(char * device){
    serial_init=0;
   // struct sched_param sp = { .sched_priority = 50 };
@@ -24,28 +26,49 @@ if( sched_setscheduler( 0, SCHED_FIFO, &sp ) == -1 )
 */
    return serial_file = fd;
 }
-
+int i=0;
+void readAll(){
+for(i=0;i<ncontrollers;i++){
+   ReadMotorController(&mc[i]);
+}
+}
+void writeAll(){
+for(i=0;i<ncontrollers;i++){
+   WriteMotorController(&mc[i]);
+   usleep(5000);
+} 
+}
+void printAll(){
+for(i=0;i<ncontrollers;i++){
+   MotorControllerPrintf(&mc[i]);
+}  
+}
 int main(int argc, char** argv){
    printf("%d\n",init(SERIALDEV));
-   MotorController m1;
-   m1.canid=3;
-   m1.dout_Vout=0;
-   printf("Init status %d\n",InitMotorController(API_VOLTAGE,&m1));
-   printf("Read status %d\n",ReadMotorController(&m1));
-   MotorControllerPrintf(&m1);
-   WriteMotorController(&m1);
-   MotorControllerPrintf(&m1);
+int i=0;
+for(i=0;i<ncontrollers;i++){
+   MotorController m;
+   m.canid=ids[i];
+   m.dout_Vout=0;
+   printf("Init status %d\n",InitMotorController(API_VOLTAGE,&m));
+   ReadMotorController(&m);
+   WriteMotorController(&m);
+   MotorControllerPrintf(&m);
+   memcpy(&mc[i],&m,sizeof(MotorController));
+}
+printf("Init done\n");
 int c=0;
-    shm_setup(1);
+//shm_setup(ncontrollers);
 while(1){
-usleep(20000);
+
 c++;
-//shm_read(&m1,1);
-WriteMotorController(&m1);
-if(c>40){
-ReadMotorController(&m1);
+
+readAll();
+printf("READ\n");
+if(c>3){
+printAll();
+printf("PRINTING\n");
 //shm_write(&m1,1);
-MotorControllerPrintf(&m1);
 c=0;
 }
 CANBroadcastHeartbeat();
