@@ -1,4 +1,4 @@
-#define RWDELAY 5000
+#define RWDELAY 500
 int InitMotorController(uint8_t mode,MotorController *mot){
 CANMessage cm;
 CANClearData(&cm);

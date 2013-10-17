@@ -9,7 +9,7 @@ int init(char * device){
    serial_init=0;
   // struct sched_param sp = { .sched_priority = 50 };
    struct termios spconfig;
-   int fd = open(device, O_RDWR | O_NOCTTY | O_NDELAY);
+   int fd = open(device, O_RDWR | O_NOCTTY | O_NONBLOCK);
    if(fd == -1 || !isatty(fd) || tcgetattr(fd, &spconfig) < 0) {
       return -1;
    }
@@ -35,7 +35,6 @@ for(i=0;i<ncontrollers;i++){
 void writeAll(){
 for(i=0;i<ncontrollers;i++){
    WriteMotorController(&mc[i]);
-   usleep(5000);
 } 
 }
 void printAll(){
@@ -63,7 +62,7 @@ while(1){
 
 c++;
 
-readAll();
+writeAll();
 printf("READ\n");
 if(c>3){
 printAll();
@@ -71,7 +70,7 @@ printf("PRINTING\n");
 //shm_write(&m1,1);
 c=0;
 }
-CANBroadcastHeartbeat();
+//CANBroadcastHeartbeat();
 }
    return 0;
 }
