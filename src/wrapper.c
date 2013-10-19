@@ -26,13 +26,19 @@ if( sched_setscheduler( 0, SCHED_FIFO, &sp ) == -1 )
 */
    return serial_file = fd;
 }
+int b=0;
 int i=0;
-void readAll(){
-for(i=0;i<ncontrollers;i++){
-   ReadMotorController(&mc[i]);
+void readRoundRobin(){
+if(b>3)
+b=0;
+//printf("b=%d\n",b);
+ReadMotorController(&mc[b]);
+b++;
+shm_srv_write(mc,4);
 }
-}
+
 void writeAll(){
+shm_srv_read(mc,4);
 for(i=0;i<ncontrollers;i++){
    WriteMotorController(&mc[i]);
 } 
@@ -56,18 +62,20 @@ for(i=0;i<ncontrollers;i++){
    memcpy(&mc[i],&m,sizeof(MotorController));
 }
 printf("Init done\n");
+printAll();
 int c=0;
-//shm_setup(ncontrollers);
+shm_setup(ncontrollers);
 while(1){
 
 c++;
-
+readRoundRobin();
+usleep(5000);
+//printf("LOOP\n");
 writeAll();
-printf("READ\n");
-if(c>3){
+if(c>30){
 printAll();
-printf("PRINTING\n");
-//shm_write(&m1,1);
+//printf("PRINTING\n");
+
 c=0;
 }
 //CANBroadcastHeartbeat();

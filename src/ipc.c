@@ -52,7 +52,7 @@ uint8_t shm_connect(){
         return ndevs;
     
 }
-void shm_write(MotorController *m ,uint8_t ndevs){
+void shm_srv_write(MotorController *m ,uint8_t ndevs){
 	MotorController *temp;
 	int i=0;
 	for(i=0; i<ndevs; i++){
@@ -61,7 +61,7 @@ void shm_write(MotorController *m ,uint8_t ndevs){
 	memcpy(temp,&m[i],sizeof(MotorController)-sizeof(int16_t));
 }
 }
-void shm_read(MotorController *m ,uint8_t ndevs){
+void shm_srv_read(MotorController *m ,uint8_t ndevs){
 	MotorController *temp;
 	int i=0;
 	for(i=0; i<ndevs; i++){
