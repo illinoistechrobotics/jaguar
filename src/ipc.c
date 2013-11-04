@@ -2,11 +2,11 @@
 #include <sys/shm.h>
 
 char *shm_pointer;
-void shm_setup(uint8_t ndevs){
+void shm_setup(uint8_t ndevsi){
     int shmid;
     key_t key;
     key = 1339;
-	uint16_t size = 2+(sizeof(MotorController)*ndevs);
+	uint16_t size = 2+(sizeof(MotorController)*ndevsi);
     /*
      * Create the segment.
      */
@@ -22,12 +22,12 @@ void shm_setup(uint8_t ndevs){
         perror("shmat");
         exit(1);
     }
-    memcpy(shm_pointer,&ndevs,sizeof(uint8_t));
+    memcpy(shm_pointer,&ndevsi,sizeof(uint8_t));
 }
 char *shm_pointer;
-uint8_t ndevs;
 uint8_t shm_connect(){
     int shmid;
+    uint8_t devs;
     key_t key;
     key = 1339;
     if ((shmid = shmget(key, 1, 0666)) < 0) {
@@ -38,8 +38,8 @@ uint8_t shm_connect(){
         perror("shmat");
         exit(1);
     }
-		memcpy(&ndevs,shm_pointer,sizeof(uint8_t));
-        uint16_t size = 2+(sizeof(MotorController)*ndevs);
+		memcpy(&devs,shm_pointer,sizeof(uint8_t));
+        uint16_t size = 2+(sizeof(MotorController)*devs);
         shmdt(shm_pointer);
         if ((shmid = shmget(key, size, 0666)) < 0) {
             perror("shmget");
@@ -49,7 +49,7 @@ uint8_t shm_connect(){
             perror("shmat");
             exit(1);
 		}
-        return ndevs;
+        return devs;
     
 }
 void shm_srv_write(MotorController *m ,uint8_t ndevs){
@@ -70,3 +70,22 @@ void shm_srv_read(MotorController *m ,uint8_t ndevs){
 	memcpy(&m[i].dout_Vout,temp,sizeof(int16_t));
 	}
 }
+void shm_cli_write(MotorController *m ,uint8_t ndevs){
+	MotorController *temp;
+	int i=0;
+	for(i=0; i<ndevs; i++){
+	temp=(MotorController *)(shm_pointer+2+(i*sizeof(MotorController))-sizeof(int16_t));
+	// memcpy last field only
+	memcpy(temp,&m[i].dout_Vout,sizeof(int16_t));
+	}
+}
+void shm_cli_read(MotorController *m ,uint8_t ndevs){
+        MotorController *temp;
+        int i=0;
+        for(i=0; i<ndevs; i++){
+        temp=(MotorController *)(shm_pointer+2+(i*sizeof(MotorController)));
+        // memcpy all data except for last field
+        memcpy(&m[i],temp,sizeof(MotorController)-sizeof(int16_t));
+}       
+}       
+

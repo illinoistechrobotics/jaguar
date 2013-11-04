@@ -9,6 +9,8 @@
 #include <sys/types.h>
 #include <string.h>
 #include <stdlib.h>
+#include "../src/definitions.h"
+#include "../src/ipc.c"
 uint8_t loop=1;
 uint16_t cseq=0;
 typedef struct{
@@ -27,10 +29,14 @@ void error(char *msg){
 
 int main(int argc, char**argv)
 {
+		int ndevs=0;
 		if(argc != 2){
 				printf("incorrect number of arguments\n");
 				return -1;
 		}
+		printf("looking for SHM regioni\n");
+		ndevs=shm_connect();
+		printf("found ndevs=%d\n");
 		int sock,valid=0;
 		struct sockaddr_in servaddr,cliaddr;
 		packet_t packet;
