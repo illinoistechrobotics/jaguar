@@ -5,17 +5,23 @@
 #include "ipc.c"
 MotorController *temp;
 int i=0, dev=0;
+MotorController *mcg;
 int main(int argc, char ** argv){
-    dev=shm_connect();
-    printf("%d devices found\n",dev);
-for(;;){
-	for(i=0; i<4; i++){
-			MotorController mc;;
-			memcpy(&mc,shm_pointer+2+(i*sizeof(MotorController)), sizeof(MotorController));
-			MotorControllerPrintf(&mc);
-				usleep(100000);
+	mcg=(MotorController*)malloc(dev*sizeof(MotorController));   
+	dev=shm_connect();
+	printf("%d devices found\n",dev);
+	for(;;){
+
+		shm_cli_read(mcg,dev);
+		shm_cli_write(mcg,dev);
+		for(i=0; i<dev; i++){
+			MotorControllerPrintf(&mcg[i]);
+			mcg[i].dout_Vout=0;
+
+
+			usleep(100000);
 		}
-}
-return 0;
+	}
+	return 0;
 
 }

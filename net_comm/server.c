@@ -14,62 +14,67 @@
 uint8_t loop=1;
 uint16_t cseq=0;
 typedef struct{
-		int8_t x,y;
-		char auth[9];
-		uint16_t seq;
-		uint8_t checksum;
+	int8_t x,y;
+	char auth[9];
+	uint16_t seq;
+	uint8_t checksum;
 } packet_t;
 void quit(){
-		loop=0;
+	loop=0;
 }
 void error(char *msg){
-		perror(msg);
-		exit(1);
+	perror(msg);
+	exit(1);
 }
 
 int main(int argc, char**argv)
 {
-		int ndevs=0;
-		if(argc != 2){
-				printf("incorrect number of arguments\n");
-				return -1;
+	int clidevs=0;
+	if(argc != 2){
+		printf("incorrect number of arguments\n");
+		return -1;
+	}
+	printf("looking for SHM region\n");
+	clidevs=shm_connect();
+	printf("found clidevs=%d\n", clidevs);
+	int sock,valid=0;
+	struct sockaddr_in servaddr,cliaddr;
+	packet_t packet;
+	socklen_t len;
+	sock=socket(AF_INET,SOCK_DGRAM,0);
+	len=sizeof(servaddr);
+	memset(&servaddr,'\0',len);
+	servaddr.sin_family = AF_INET;
+	servaddr.sin_addr.s_addr=htonl(INADDR_ANY);
+	servaddr.sin_port=htons(atoi(argv[1]));
+	bind(sock,(struct sockaddr *)&servaddr,len);
+	MotorController *mcg;
+	mcg=(MotorController*)malloc(clidevs*sizeof(MotorController));
+
+	while(sock&&loop){
+		recvfrom(sock,&packet,sizeof(packet),0,(struct sockaddr *)&servaddr,&len);
+		//	printf("E %x, G: %x\n",(packet.x^packet.y)&0xff,packet.checksum);
+		if(((packet.x^packet.y)&0xff)==packet.checksum){
+			// Handle seq rollover
+			if(cseq-packet.seq>50000){
+				cseq=packet.seq;
+			}
+			//Drop old packets
+			if(packet.seq>cseq){
+				cseq=packet.seq;
+				valid=1;
+			} else {
+				valid=0;
+			}
 		}
-		printf("looking for SHM regioni\n");
-		ndevs=shm_connect();
-		printf("found ndevs=%d\n");
-		int sock,valid=0;
-		struct sockaddr_in servaddr,cliaddr;
-		packet_t packet;
-		socklen_t len;
-		sock=socket(AF_INET,SOCK_DGRAM,0);
-		len=sizeof(servaddr);
-		memset(&servaddr,'\0',len);
-		servaddr.sin_family = AF_INET;
-		servaddr.sin_addr.s_addr=htonl(INADDR_ANY);
-		servaddr.sin_port=htons(atoi(argv[1]));
-		bind(sock,(struct sockaddr *)&servaddr,len);
-		while(sock&&loop){
-				recvfrom(sock,&packet,sizeof(packet),0,(struct sockaddr *)&servaddr,&len);
-			//	printf("E %x, G: %x\n",(packet.x^packet.y)&0xff,packet.checksum);
-				if(((packet.x^packet.y)&0xff)==packet.checksum){
-						// Handle seq rollover
-						if(cseq-packet.seq>50000){
-								cseq=packet.seq;
-						}
-						//Drop old packets
-						if(packet.seq>cseq){
-								cseq=packet.seq;
-								valid=1;
-						} else {
-								valid=0;
-						}
-				}
-				else{
-						valid=0;
-				}
-				if(valid){
-						//Handle data here
-						printf("X=%d, Y=%d, seq=%d\n",packet.x,packet.y,packet.seq);
-				}
+		else{
+			valid=0;
 		}
+		if(valid){
+			//Handle data here
+			printf("X=%d, Y=%d, seq=%d\n",packet.x,packet.y,packet.seq);
+			shm_cli_write(mcg,clidevs);
+
+		}
+	}
 }

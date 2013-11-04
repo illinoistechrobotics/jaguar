@@ -64,19 +64,21 @@ void shm_srv_write(MotorController *m ,uint8_t ndevs){
 void shm_srv_read(MotorController *m ,uint8_t ndevs){
 	MotorController *temp;
 	int i=0;
+	temp=(MotorController *)(shm_pointer+2);
 	for(i=0; i<ndevs; i++){
-	temp=(MotorController *)(shm_pointer+2+(i*sizeof(MotorController))-sizeof(int16_t));
-	// memcpy last field only
-	memcpy(&m[i].dout_Vout,temp,sizeof(int16_t));
+
+	// get last field only
+	m[i].dout_Vout=temp[i].dout_Vout;
 	}
 }
 void shm_cli_write(MotorController *m ,uint8_t ndevs){
 	MotorController *temp;
 	int i=0;
+	temp=(MotorController *)(shm_pointer+2);
 	for(i=0; i<ndevs; i++){
-	temp=(MotorController *)(shm_pointer+2+(i*sizeof(MotorController))-sizeof(int16_t));
-	// memcpy last field only
-	memcpy(temp,&m[i].dout_Vout,sizeof(int16_t));
+
+	// set last field only
+	temp[i].dout_Vout=m[i].dout_Vout;
 	}
 }
 void shm_cli_read(MotorController *m ,uint8_t ndevs){

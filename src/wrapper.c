@@ -75,7 +75,6 @@ writeAll();
 if(c>30){
 printAll();
 //printf("PRINTING\n");
-
 c=0;
 }
 //CANBroadcastHeartbeat();
