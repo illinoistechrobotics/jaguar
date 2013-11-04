@@ -35,12 +35,14 @@ b=0;
 ReadMotorController(&mc[b]);
 b++;
 shm_srv_write(mc,4);
+memcpy(&safety,shm_pointer+1,1);
 }
 
 void writeAll(){
-shm_srv_read(mc,4);
+
 for(i=0;i<ncontrollers;i++){
    WriteMotorController(&mc[i]);
+memcpy(shm_pointer+1,&safety,1);
 } 
 }
 void printAll(){
@@ -71,8 +73,17 @@ c++;
 readRoundRobin();
 usleep(5000);
 //printf("LOOP\n");
+shm_srv_read(mc,4);
+if(safety>10){
+for(i=0;i<ncontrollers;i++){
+   mc[i].dout_Vout=0;
+}}
+else{
+	safety++;
+}
 writeAll();
 if(c>30){
+printf("Safety status = %d\n",safety);
 printAll();
 //printf("PRINTING\n");
 c=0;

@@ -1,6 +1,6 @@
 #include <sys/ipc.h>
 #include <sys/shm.h>
-
+uint8_t safety;
 char *shm_pointer;
 void shm_setup(uint8_t ndevsi){
     int shmid;

@@ -73,8 +73,12 @@ int main(int argc, char**argv)
 		if(valid){
 			//Handle data here
 			printf("X=%d, Y=%d, seq=%d\n",packet.x,packet.y,packet.seq);
+			mcg[0].dout_Vout=packet.x*-255;
+			mcg[1].dout_Vout=packet.x*-255;
+			mcg[2].dout_Vout=packet.y*-255;
+			mcg[3].dout_Vout=packet.y*-255;			
 			shm_cli_write(mcg,clidevs);
-
+		memset(shm_pointer+1,0,1);	
 		}
 	}
 }
