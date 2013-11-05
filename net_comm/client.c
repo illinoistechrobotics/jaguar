@@ -75,8 +75,8 @@ packet.seq=65530;
 while(loop&&SDL_JoystickGetAttached(joy)){
 packet.seq++;
 SDL_JoystickUpdate();
-packet.x = SDL_JoystickGetAxis(joy, 0)/256;
-packet.y = SDL_JoystickGetAxis(joy, 1)/256;
+packet.x = SDL_JoystickGetAxis(joy, 1)/256;
+packet.y = SDL_JoystickGetAxis(joy, 3)/256;
 packet.checksum=packet.x^packet.y;
 rv=sendto(sock,&packet,sizeof(packet),0,(const struct sockaddr *)&server,length);
 //printf("X=%d, Y=%d\n",packet.x,packet.y);
