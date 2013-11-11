@@ -78,7 +78,7 @@ packet.seq++;
 SDL_JoystickUpdate();
 //tank drive
 packet.x = SDL_JoystickGetAxis(joy, 1)/256;
-packet.y = SDL_JoystickGetAxis(joy, 3)/256;
+packet.y = SDL_JoystickGetAxis(joy, 2)/256;
 
 packet.checksum=packet.x^packet.y;
 rv=sendto(sock,&packet,sizeof(packet),0,(const struct sockaddr *)&server,length);

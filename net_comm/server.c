@@ -73,12 +73,14 @@ int main(int argc, char**argv)
 		if(valid){
 			//Handle data here
 			printf("X=%d, Y=%d, seq=%d\n",packet.x,packet.y,packet.seq);
-			mcg[0].dout_Vout=((packet.x*-255)/3.0)*0.85;
-			mcg[1].dout_Vout=((packet.x*-255)/3.0)*0.85;
-			mcg[2].dout_Vout=(packet.y*-255)/3.0;
-			mcg[3].dout_Vout=(packet.y*-255)/3.0;			
+			float left_side = ((packet.x*-255)/3.0)*0.95 + ((packet.y*-255)/3.0)*0.95;
+			float right_side = ((packet.x*-255)/3.0)     - ((packet.y*-255)/3.0);
+			//left side motors
+			mcg[0].dout_Vout=(mcg[1].dout_Vout=left_side);
+			//right side motors
+			mcg[2].dout_Vout=(mcg[3].dout_Vout=right_side);
 			shm_cli_write(mcg,clidevs);
-		memset(shm_pointer+1,0,1);	
+			memset(shm_pointer+1,0,1);
 		}
 	}
 }
