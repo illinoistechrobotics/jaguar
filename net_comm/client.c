@@ -54,6 +54,7 @@ printf("Network...\n");
 int sock, rv, length;
 struct sockaddr_in server, from;
 struct hostent *hp;
+int tx,ty;
 char buffer[256];
    sock= socket(AF_INET, SOCK_DGRAM, 0);
    if (sock < 0) error("socket");
@@ -75,8 +76,10 @@ packet.seq=65530;
 while(loop&&SDL_JoystickGetAttached(joy)){
 packet.seq++;
 SDL_JoystickUpdate();
+//tank drive
 packet.x = SDL_JoystickGetAxis(joy, 1)/256;
 packet.y = SDL_JoystickGetAxis(joy, 3)/256;
+
 packet.checksum=packet.x^packet.y;
 rv=sendto(sock,&packet,sizeof(packet),0,(const struct sockaddr *)&server,length);
 //printf("X=%d, Y=%d\n",packet.x,packet.y);
